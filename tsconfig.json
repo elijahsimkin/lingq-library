@@ -8,7 +8,13 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "strict": true
+    "strict": true,
+    "plugins": [
+      {
+        "transform": "typia/lib/transform",
+        "exclude": "node_modules/**"
+      }
+    ]
   },
   "include": ["src"]
 }
