@@ -1,4 +1,7 @@
+// vite.config.ts
 import { defineConfig } from "vitest/config";
+import UnpluginTypia from '@ryoppippi/unplugin-typia/vite'
+
 
 export default defineConfig({
   test: {
@@ -6,5 +9,6 @@ export default defineConfig({
     coverage: {
       reporter: ["text", "json", "html"]
     }
-  }
+  },
+  plugins: [UnpluginTypia()],
 });
