@@ -19,7 +19,56 @@ type ParamsLessonCreate = {
     notes: string;
     save: boolean;
 };
-
+type LessonCardHint = {
+    approved: boolean;
+    creator_id: number;
+    deteced_locale: unknown; // null in personal example
+    flagged: boolean;
+    id: number;
+    is_google_translate: boolean;
+    locale: string; // some kind of language code
+    popularity: number;
+    term_id: number;
+    text: string; // the translation
+    word_id: number;
+}
+type LessonWordHint = {
+    flagged: boolean;
+    id: number;
+    is_google_translate: boolean; // if the hint comes from GT
+    popularity: number;
+    text: string;
+}
+type LessonWord = {
+    hints: LessonWordHint[];
+    importance: number;
+    status: string; // "known is one status"
+    tags: unknown[];
+    text: string;
+}
+type LessonCard = {
+    extended_status: number;
+    fragment: string;
+    gTags: unknown[];
+    hints: LessonCardHint[]; // used typically for translations
+    importance: number;
+    notes: string;
+    pk: number;
+    srs_due_date: string; // unknown if this follows a format. example is 2038-09-15T19:01:31.255199 as of 2/9/2025
+    status: number;
+    term: string;
+    transliteration: unknown; // some kind of object
+    words: string[]; // if it is a phrase
+    writings: string[]; // the difference between this and words is unknown as of now
+}
+type LessonWordsGetReturnValue = {
+    cards: {
+        [key: number]: LessonCard; // significance of key value unknown. non-sequential.
+    },
+    words: {
+        [key: number]: LessonWord; 
+    }
+}
 export default class LingqAPI {
     private languageCode: LanguageCode;
     private lessonCode: number;
@@ -130,6 +179,21 @@ export default class LingqAPI {
             method: 'DELETE',
         });
     }
+    async lessonWordsGet(): Promise<LessonWordsGetReturnValue> {
+        const response = await fetch(
+            `https://www.lingq.com/api/v3/${this.languageCode}/lessons/${this.lessonCode}/words/`,
+            {
+                method: 'GET',
+                headers: this.buildHeaders({ isPost: false }),
+            }
+        );
+
+        const words: LessonWordsGetReturnValue = await response.json();
+
+        typia.assert<LessonWordsGetReturnValue>(words); // Throws an error if the response is invalid
+
+        return words;
+    }
     // ========================
     // SENTENCES
     // ========================
@@ -207,4 +271,8 @@ export default class LingqAPI {
 
         return response;
     }
+    // ========================
+    // USER
+    // ========================
+    
 }
