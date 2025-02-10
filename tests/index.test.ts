@@ -40,7 +40,7 @@ describe('LingQ', () => {
 
 	it('should function', async () => {
 		const lingQ = new LingQ(config.langCode!, parseInt(config.lessonCode!), config.csrfToken!, config.sessionId!);
-		const res = await lingQ.getLesson();
+		const res = await lingQ.lessonGet();
 		expect(res).toBeDefined();
 	});
 });
