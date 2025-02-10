@@ -4,7 +4,7 @@ import { Lesson } from './LingQ';
 // index.ts
 type LanguageCode = string; // expand later to be just those languages that are supported
 type LessonStatus = string; // expand later to be just those statuses that are supported
-type CreateLessonParams = {
+type ParamsLessonCreate = {
     description: string;
     groups: unknown[];
     hasPrice: boolean;
@@ -84,8 +84,10 @@ export default class LingqAPI {
 
         return headers;
     }
-
-    async getLesson(): Promise<Lesson> {
+    // ========================
+    // LESSON
+    // ========================
+    async lessonGet(): Promise<Lesson> {
         const response = await fetch(`${this._baseURL()}/editor/`, {
             method: 'GET',
             headers: this.buildHeaders({ isPost: false }),
@@ -104,7 +106,7 @@ export default class LingqAPI {
      * @returns nothing
      * NOTE: This switches the the API to the newly created lesson.
      */
-    async createLesson(lessonParams: CreateLessonParams): Promise<undefined> {
+    async lessonCreate(lessonParams: ParamsLessonCreate): Promise<undefined> {
         // returns nothing
         const response = await fetch(
             `https://www.lingq.com/api/v3/${this.lessonCode}/lessons/import/`,
@@ -121,33 +123,17 @@ export default class LingqAPI {
 
         return;
     }
-    async deleteLesson(lessonId: number) {
+    async lessonDelete(lessonId: number) {
         fetch(`https://www.lingq.com/api/v2/contexts/7198304/lesson/`, { // the context indicates which webpack function it's using I think
             headers: this.buildHeaders({ isPost: true, includeCsrf: true }),
             body: JSON.stringify({ lesson: lessonId }),
             method: 'DELETE',
         });
     }
-
-    _baseURL() {
-        return `https://www.lingq.com/api/v3/${this.languageCode}/lessons/${this.lessonCode}`;
-    }
-    _sentencesURL() {
-        return `${this._baseURL()}/sentences/`;
-    }
-    private async _postSentences(body: any) {
-        const sentences = this._sentencesURL();
-        const init = {
-            method: 'POST',
-            headers: this.buildHeaders({ isPost: true, includeCsrf: true }),
-            body: JSON.stringify(body),
-        };
-
-        const response = await fetch(sentences, init);
-
-        return response;
-    }
-    async updateSentenceTimestamp(index: number, timestamp: [number, number]) {
+    // ========================
+    // SENTENCES
+    // ========================
+    async sentenceTimestampUpdate(index: number, timestamp: [number, number]) {
         return await this._postSentences({
             action: 'update',
             timestamp,
@@ -161,7 +147,7 @@ export default class LingqAPI {
      * @param text
      * @returns
      */
-    async updateSentenceText(index: number, text: string) {
+    async sentenceTextUpdate(index: number, text: string) {
         return await this._postSentences({
             action: 'update',
             text,
@@ -177,7 +163,7 @@ export default class LingqAPI {
      * @param after if you want the new sentence to be after the current one. The default is false.
      * @returns
      */
-    async createSentence(index: number, text: string, after = false) {
+    async sentenceCreate(index: number, text: string, after = false) {
         // after=false means that the new sentence will be @ index
         return await this._postSentences({
             after: after,
@@ -188,16 +174,37 @@ export default class LingqAPI {
         });
     }
 
-    async deleteSentence(index: number) {
+    async sentenceDelete(index: number) {
         return await this._postSentences({
             index: index,
             action: 'delete',
         }); // the api returns no body for delete requests.
     }
-    async breakSentence(index: number) {
+    async sentenceBreak(index: number) {
         return await this._postSentences({
             action: 'break',
             index,
         });
+    }
+    // ========================
+    // HELPERS
+    // ========================
+    private _baseURL() {
+        return `https://www.lingq.com/api/v3/${this.languageCode}/lessons/${this.lessonCode}`;
+    }
+    private _sentencesURL() {
+        return `${this._baseURL()}/sentences/`;
+    }
+    private async _postSentences(body: any) {
+        const sentences = this._sentencesURL();
+        const init = {
+            method: 'POST',
+            headers: this.buildHeaders({ isPost: true, includeCsrf: true }),
+            body: JSON.stringify(body),
+        };
+
+        const response = await fetch(sentences, init);
+
+        return response;
     }
 }
