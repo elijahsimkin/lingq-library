@@ -75,30 +75,32 @@ createTestGroup('Lesson Operations', true, () => {
                         throw new Error('Sentence creation failed');
                     }
                     console.log('Sentence Create Response:', response.status);
-                });
+                }, true);
 
-                createTest('Sentence Text Update', async () => {
-                    const response = await lingQ.sentenceTextUpdate(1, 'Updated test sentence');
-                    if (!response.ok) {
-                        throw new Error('Sentence text update failed');
-                    }
-                    console.log('Sentence Text Update Response:', response.status);
-                });
-
-                createTest('Sentence Timestamp Update', async () => {
-                    const response = await lingQ.sentenceTimestampUpdate(1, [10, 20]);
-                    if (!response.ok) {
-                        throw new Error('Sentence timestamp update failed');
-                    }
-                    console.log('Sentence Timestamp Update Response:', response.status);
-                });
-
-                createTest('Sentence Break', async () => {
-                    const response = await lingQ.sentenceBreak(1);
-                    if (!response.ok) {
-                        throw new Error('Sentence break failed');
-                    }
-                    console.log('Sentence Break Response:', response.status);
+                createTestGroup('Sentence Modification Tests', false, () => {
+                    createTest('Sentence Text Update', async () => {
+                        const response = await lingQ.sentenceTextUpdate(1, 'Updated test sentence');
+                        if (!response.ok) {
+                            throw new Error('Sentence text update failed');
+                        }
+                        console.log('Sentence Text Update Response:', response.status);
+                    });
+    
+                    createTest('Sentence Timestamp Update', async () => {
+                        const response = await lingQ.sentenceTimestampUpdate(1, [10, 20]);
+                        if (!response.ok) {
+                            throw new Error('Sentence timestamp update failed');
+                        }
+                        console.log('Sentence Timestamp Update Response:', response.status);
+                    });
+    
+                    createTest('Sentence Break', async () => {
+                        const response = await lingQ.sentenceBreak(1);
+                        if (!response.ok) {
+                            throw new Error('Sentence break failed');
+                        }
+                        console.log('Sentence Break Response:', response.status);
+                    });
                 });
 
                 createTest('Sentence Delete', async () => {
@@ -107,7 +109,7 @@ createTestGroup('Lesson Operations', true, () => {
                         throw new Error('Sentence delete failed');
                     }
                     console.log('Sentence Delete Response:', response.status);
-                });
+                }, true);
             });
 
             createTest('Lesson Delete', async () => {
