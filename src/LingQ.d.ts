@@ -52,27 +52,27 @@ interface Collection {
   interface Lesson {
 	id: number;
 	title: string;
-	status: "private" | "public";
-	level: number;
+	status: "private" | "public" | "I" | "inaccessible";
+	level: number | null;
 	collection: Collection;
 	provider: string | null;
-	image: string;
+	image: string | null;
 	audio: string | null;
 	duration: number; // Duration in seconds
 	description: string;
 	accent: string | null;
 	shelves: string[]; // e.g., ["other"]
-	originalUrl: string;
-	external_audio: string;
+	originalUrl: string | null;
+	external_audio: string | null;
 	tags: string[]; // e.g., ["video"]
-	video: string;
+	video: string | null;
 	price: number;
-	originalImageUrl: string;
-	imageUrl: string;
+	originalImageUrl: string | null;
+	imageUrl: string | null;
 	isProtected: boolean | null;
 	isFeatured: boolean | null;
 	isHidden: boolean;
-	language: string; // e.g., "Hebrew"
+	language: string; 
 	paragraphs: Paragraph[];
   }
   

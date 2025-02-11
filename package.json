@@ -2,17 +2,16 @@
   "name": "lingq-library",
   "version": "1.0.0",
   "description": "A TypeScript Node.js library for interacting with LingQ",
-  "main": "dist/index.cjs",
+  "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc && tsc --module CommonJS --outDir dist/cjs",
-    "test": "vitest",
-    "test:watch": "vitest --watch",
-    "test:coverage": "vitest --coverage",
+    "dev": "npm run build && node dist/index.js",
+    "test": "npm run build && node dist/test.js",
+    "build": "tsc",
     "prepare": "ts-patch install && typia patch"
   },
   "exports": {
@@ -25,11 +24,8 @@
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^22.13.1",
-    "ts-node": "^10.9.2",
     "ts-patch": "^3.3.0",
-    "tsx": "^4.19.2",
-    "typescript": "~5.7.3",
-    "vitest": "^3.0.5"
+    "typescript": "~5.7.3"
   },
   "dependencies": {
     "@ryoppippi/unplugin-typia": "npm:@jsr/ryoppippi__unplugin-typia@^1.2.0",

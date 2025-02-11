@@ -7,8 +7,9 @@
     "target": "ES6",
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true,
     "strict": true,
+    "inlineSourceMap": true,  // ✅ Keep this, remove "sourceMap"
+    "inlineSources": true,
     "plugins": [
       {
         "transform": "typia/lib/transform",

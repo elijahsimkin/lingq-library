@@ -1,5 +1,6 @@
 import typia from 'typia';
 import { Lesson } from './LingQ';
+import { inspect } from 'util';
 
 // index.ts
 type LanguageCode = string; // expand later to be just those languages that are supported
@@ -19,6 +20,36 @@ type ParamsLessonCreate = {
     notes: string;
     save: boolean;
 };
+type LessonCreateReturnType = {
+    id: number,
+    contentId: number,
+    collectionId: number,
+    collectionTitle: string,
+    url: string;
+    originalUrl: null,
+    imageUrl: string,
+    originalImageUrl: string,
+    providerImageUrl: string, 
+    title: string,
+    description: string,
+    duration: number,
+    audioUrl: string | null,
+    audioPending: boolean,
+    giveRoseUrl: string,
+    wordCount: number,
+    uniqueWordCount: number,
+    pubDate: string, // "2025-02-10" form
+    sharedDate: null | unknown, // unknown how other data comes out
+    sharedById: number,
+    sharedByName: string,
+    sharedByRole: "librarian" | string, // unknown how other data comes out
+    external_type: null | unknown,
+    type: "lesson" | unknown,
+    status: "I" | unknown,
+    pos: number,
+    price: number,
+    lessonURL: string;
+}
 type LessonCardHint = {
     approved: boolean;
     creator_id: number;
@@ -75,7 +106,7 @@ export default class LingqAPI {
     private csrfToken: string;
     private sessionId: string;
 
-    private static VERSION = 'Web/5.3.38'; // update this or you will be rejected
+    private static VERSION = 'Web/5.3.46'; // update this or you will be rejected
     private commonHeaders: {
         'Accept': string;
         'Priority': string;
@@ -136,14 +167,18 @@ export default class LingqAPI {
     // ========================
     // LESSON
     // ========================
-    async lessonGet(): Promise<Lesson> {
+    async lessonGet(lessonCode?: number): Promise<Lesson> {
+        this.lessonCode = lessonCode ?? this.lessonCode; // switch to the new lesson if possible
+
         const response = await fetch(`${this._baseURL()}/editor/`, {
             method: 'GET',
             headers: this.buildHeaders({ isPost: false }),
         });
-
+        if (!response.ok)
+            throw new Error("Lesson doesn't exist.");
+        
         const lesson: Lesson = await response.json();
-
+        
         typia.assert<Lesson>(lesson); // Throws an error if the response is invalid
 
         return lesson;
@@ -155,25 +190,33 @@ export default class LingqAPI {
      * @returns nothing
      * NOTE: This switches the the API to the newly created lesson.
      */
-    async lessonCreate(lessonParams: ParamsLessonCreate): Promise<undefined> {
+    async lessonCreate(lessonParams: ParamsLessonCreate): Promise<LessonCreateReturnType> {
+        /**
+         * 
+         */
         // returns nothing
         const response = await fetch(
-            `https://www.lingq.com/api/v3/${this.lessonCode}/lessons/import/`,
+            `https://www.lingq.com/api/v3/${this.languageCode}/lessons/import/`,
             {
                 method: 'POST',
                 headers: this.buildHeaders({ isPost: true, includeCsrf: true }),
                 body: JSON.stringify(lessonParams),
             }
         );
-
+        console.log({response});
+        
         if (!response.ok) {
-            throw new Error(`Failed to create lesson: ${response.statusText}`);
+            throw new Error(`Failed to create lesson: ${response}`);
         }
 
-        return;
+        const lessonCreationDetails: LessonCreateReturnType = await response.json();
+
+        typia.assert<LessonCreateReturnType>(lessonCreationDetails); // Throws an error if the response is invalid
+
+        return lessonCreationDetails;
     }
-    async lessonDelete(lessonId: number) {
-        fetch(`https://www.lingq.com/api/v2/contexts/7198304/lesson/`, { // the context indicates which webpack function it's using I think
+    async lessonDelete(lessonId: number): Promise<Response> {
+        return fetch(`https://www.lingq.com/api/v2/contexts/7198304/lesson/`, { // the context indicates which webpack function it's using I think
             headers: this.buildHeaders({ isPost: true, includeCsrf: true }),
             body: JSON.stringify({ lesson: lessonId }),
             method: 'DELETE',
