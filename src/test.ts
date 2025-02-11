@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv';
 import { Lesson } from './LingQ';
 import LingqAPI from './index.js';
 import { inspect } from 'util';
+import { COLORS, createTest, runTests } from './testinglib.js';
 
 dotenv.config();
 
@@ -13,86 +14,7 @@ const config = {
     sessionId: process.env.SESSION_ID,
 };
 
-interface Test {
-    name: string;
-    fn: () => Promise<void>;
-}
 
-const tests: Test[] = [];
-const results: { name: string; passed: boolean; error?: string }[] = [];
-let globalFailure = false;
-
-const COLORS = {
-    RESET: '\x1b[0m',
-    RED: '\x1b[31m',
-    GREEN: '\x1b[32m',
-    CYAN: '\x1b[36m',
-    MAGENTA: '\x1b[35m',
-};
-
-function testLog(message: string) {
-    console.log(`${COLORS.CYAN}[TEST] ${message}${COLORS.RESET}`);
-}
-
-/**
- * Creates a test with the given name. Any nested tests are added to the global tests array.
- */
-function createTest(name: string, testFn: () => Promise<any>) {
-    tests.push({
-        name,
-        fn: async () => {
-            testLog(`Running test: ${name}`);
-            try {
-                await testFn();
-                testLog(`${COLORS.GREEN}Test: ${name} passed${COLORS.RESET}`);
-                results.push({ name, passed: true });
-            } catch (e: any) {
-                testLog(`${COLORS.RED}Test: ${name} failed - ${e.message || e}${COLORS.RESET}`);
-                results.push({ name, passed: false, error: e.message || String(e) });
-                globalFailure = true;
-            }
-        },
-    });
-}
-
-/**
- * Runs tests sequentially. If a test fails, all subsequent tests are skipped.
- * A final summary is printed with error messages for failing tests.
- */
-async function runTests(tests: Test[]) {
-    while (tests.length > 0) {
-        const currentTest = tests.shift()!;
-        if (globalFailure) {
-            testLog(
-                `${COLORS.RED}Skipping test: ${currentTest.name} due to previous failure.${COLORS.RESET}`
-            );
-            results.push({
-                name: currentTest.name,
-                passed: false,
-                error: 'Skipped due to previous failure',
-            });
-            continue;
-        }
-        await currentTest.fn();
-    }
-    // Print summary
-    testLog('===== TEST SUMMARY =====');
-    const passedTests = results.filter((r) => r.passed);
-    const failedTests = results.filter((r) => !r.passed);
-    testLog(
-        `${COLORS.GREEN}Passed tests: ${passedTests.map((r) => r.name).join(', ') || 'None'}${
-            COLORS.RESET
-        }`
-    );
-    if (failedTests.length > 0) {
-        testLog(`${COLORS.RED}Failed tests:${COLORS.RESET}`);
-        failedTests.forEach((test) => {
-            testLog(`${COLORS.RED}${test.name}: ${test.error}${COLORS.RESET}`);
-        });
-    } else {
-        testLog(`${COLORS.RED}Failed tests: ❌${COLORS.RESET}`);
-    }
-}
 
 // ========================
 // TESTS DEFINED BELOW
@@ -107,7 +29,7 @@ const lingQ: LingqAPI = new LingqAPI(
 
 createTest('Lesson Create', async () => {
     const lessonCreationDetails = await lingQ.lessonCreate({
-        description: 's',
+        description: 'Test lesson',
         groups: [],
         hasPrice: false,
         isProtected: false,
@@ -115,34 +37,92 @@ createTest('Lesson Create', async () => {
         language: 'he',
         status: 'private',
         tags: [],
-        text: 's',
-        title: 's',
+        text: 'Initial text',
+        title: 'Test Lesson',
         translations: [],
         notes: '',
         save: true,
     });
 
-    // Output actual content (no color coding)
     console.log('Lesson Creation Details:', lessonCreationDetails.id);
 
-    // Nested test: relies on lessonCreationDetails being available
     createTest('Lesson Get', async () => {
         const lessonId = lessonCreationDetails.id;
         const lesson: Lesson = await lingQ.lessonGet(lessonId);
         console.log('Lesson:', lesson.id);
 
+        // Test: Lesson Words Get
+        createTest('Lesson Words Get', async () => {
+            const words = await lingQ.lessonWordsGet();
+            if (
+                !words ||
+                typeof words !== 'object' ||
+                !words.cards ||
+                !words.words ||
+                typeof words.cards !== 'object' ||
+                typeof words.words !== 'object'
+            ) {
+                throw new Error('Invalid structure for lesson words');
+            }
+            console.log('Lesson Words Get:', inspect(words, { depth: null, colors: true }));
+        });
+
+        // Test: Sentence Create
+        createTest('Sentence Create', async () => {
+            const response = await lingQ.sentenceCreate(1, "New test sentence", false);
+            console.log(await response.json());
+            
+            if (!response.ok) {
+                throw new Error('Sentence creation failed');
+            }
+            console.log('Sentence Create Response:', response.status);
+        });
+
+        // Test: Sentence Text Update
+        createTest('Sentence Text Update', async () => {
+            const response = await lingQ.sentenceTextUpdate(1, "Updated test sentence");
+            if (!response.ok) {
+                throw new Error('Sentence text update failed');
+            }
+            console.log('Sentence Text Update Response:', response.status);
+        });
+
+        // Test: Sentence Timestamp Update
+        createTest('Sentence Timestamp Update', async () => {
+            const response = await lingQ.sentenceTimestampUpdate(1, [10, 20]);
+            if (!response.ok) {
+                throw new Error('Sentence timestamp update failed');
+            }
+            console.log('Sentence Timestamp Update Response:', response.status);
+        });
+
+        // Test: Sentence Break
+        createTest('Sentence Break', async () => {
+            const response = await lingQ.sentenceBreak(1);
+            if (!response.ok) {
+                throw new Error('Sentence break failed');
+            }
+            console.log('Sentence Break Response:', response.status);
+        });
+
+        // Test: Sentence Delete
+        createTest('Sentence Delete', async () => {
+            const response = await lingQ.sentenceDelete(1);
+            if (!response.ok) {
+                throw new Error('Sentence delete failed');
+            }
+            console.log('Sentence Delete Response:', response.status);
+        });
+
+        // Finally, delete the test lesson.
         createTest('Lesson Delete', async () => {
             const response = await lingQ.lessonDelete(lessonId);
-
-            console.log(inspect(response, { depth: null, colors: true }));
+            console.log('Lesson Delete Response:', inspect(response, { depth: null, colors: true }));
             if (!response.ok) {
-                console.log("Failed to delete lesson:", response);
-                
                 throw new Error('Failed to delete lesson');
             }
 
-            
-
+            // Confirm deletion
             createTest('Lesson Get After Delete', async () => {
                 try {
                     await lingQ.lessonGet(lessonId);
@@ -155,5 +135,6 @@ createTest('Lesson Create', async () => {
     });
 });
 
+
 // RUN TESTS
-runTests(tests);
+runTests();
