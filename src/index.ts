@@ -251,10 +251,27 @@ export default class LingqAPI {
         typia.assert<LessonStats>(lessonStats); // Throws an error if the response is invalid
         return lessonStats;
     }
-
-    async lessonBookmarkCreate() {
+    /**
+     * 
+     * Sets where the user will reopen the page based on the index of a word. Throws an error if it doesn't work. Otherwise returns true.
+     * @param wordIndex the word index at which the user wants to create a bookmark
+     * @param client an optional parameter. options other than 'web' are unknown and side effects are unknown.
+     */
+    async lessonBookmarkCreate(wordIndex: number, client='web'): Promise<boolean> {
         const url = `https://www.lingq.com/api/v3/${this.languageCode}/lessons/${this.lessonCode}/bookmark/`;
+        const init = {
+            method: 'POST',
+            headers: this.buildHeaders({ isPost: true, includeCsrf: true }),
+            body: JSON.stringify({
+                wordIndex,
+                client
+            }),
+        }
+        const response = await fetch(url, init); // the api returns no body for this request.
+
+        if (!response.ok) throw new Error('Failed to create bookmark');
         
+        return response.ok; 
     }
 
     async lessonWordsGet(): Promise<LessonWordsGetReturnValue> {
