@@ -292,7 +292,29 @@ export default class LingqAPI {
         typia.assert<LessonStats>(lessonStats); // Throws an error if the response is invalid
         return lessonStats;
     }
-    
+    /**
+     * 
+     * @param cardId the id that is associtad with the card when returned from a getWords
+     * @param status from 0-4? how well it is known
+     * @param extended_status unknown what this is
+     */
+    async updateCardStatus(cardId: number, status: string, content: number, extended_status=0): Promise<LessonCard> {
+        const url = `https://www.lingq.com/api/v3/${this.languageCode}/cards/${cardId}/`;
+        const init = {
+            method: 'PATCH',
+            headers: this.buildHeaders({ isPost: true, includeCsrf: true }),
+            body: JSON.stringify({
+                status,
+                extended_status,
+                content // some number; unknown what it represents currently
+            }),
+        }
+        const response = await fetch(url, init);
+        if (!response.ok) throw new Error('Failed to update card status');
+        const card: LessonCard = await response.json();
+        typia.assert<LessonCard>(card); // Throws an error if the response is invalid
+        return card;
+    }
     private getLessonStatsURL() {
         return `https://www.lingq.com//api/v2/${this.languageCode}/lesson-stats/${this.lessonCode}/`;
     }
