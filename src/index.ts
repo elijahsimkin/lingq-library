@@ -448,9 +448,9 @@ export default class LingqAPI {
      *  appName: the name of the voice synthesis app. Default is 'msspeak'
      *  language: defaults to the lesson language
      */
-    async getTTSSpeech(text: string, voice: string, extraOptions: {appName: string?, language?: string}) {
-        const app_name = encodeURIComponent(extraOptions.appName ?? 'msspeak');
-        const language = encodeURIComponent(extraOptions.language ?? this.languageCode);
+    async getTTSSpeech(text: string, voice: string, extraOptions?: {appName?: string, language?: string}) {
+        const app_name = encodeURIComponent(extraOptions?.appName ?? 'msspeak');
+        const language = encodeURIComponent(extraOptions?.language ?? this.languageCode);
         const encodedText = encodeURIComponent(text);
         const encodedVoice = encodeURIComponent(voice);
 
