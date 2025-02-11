@@ -105,6 +105,23 @@ type LessonWordsGetReturnValue = {
         [key: number]: LessonWord; 
     }
 }
+type TTSReturnType = {
+    "id": number,
+    "language": {
+        "id": number, // the number corresponding to the lagnuage. 22=hebrew?
+        "url": string, // a url, example https://www.lingq.com/api/v2/languages/22/
+        "code": string, // the lang code, i.e. "he"
+        "title": string // the name of the language, i.e. Hebrew
+    },
+    "app_name": "msspeak", // name of the tts app
+    "voice": "he-IL:Female", // voice used
+    "voice_type": null | unknown, // unknown what this is
+    "text": string, // the text that was spoken. in hebrew at least, it is in between bars '|TEXT|
+    "audio": string, // link to audio, for eaxmple: "https://s3.amazonaws.com/media.lingq.com/resources/tts/audio/hehe-ILFemale_b8022eb1-f96b-4bfa-9b07-144f1c0a8117.mp3",
+    "ctime": string | unknown, // a date with a time "2023-10-11T17:16:02.973061"
+    "ftime": null | unknown,
+        "fixed": null | unknown
+}
 export default class LingqAPI {
     private languageCode: LanguageCode;
     private lessonCode: number;
@@ -369,5 +386,35 @@ export default class LingqAPI {
     // ========================
     // USER
     // ========================
-    
+    // ========================
+    // OTHER ACTIONS
+    // ========================
+    /**
+     * 
+     * @param text the text you want spoken
+     * @param voice the voice you want it spoken in. Example: 'he-IL:Female' for Hebrew female voice
+     * @param extraOptions if you want to override default options, you can do so here. 
+     *  appName: the name of the voice synthesis app. Default is 'msspeak'
+     *  language: defaults to the lesson language
+     */
+    async getTTSSpeech(text: string, voice: string, extraOptions: {appName: string?, language?: string}) {
+        const app_name = encodeURIComponent(extraOptions.appName ?? 'msspeak');
+        const language = encodeURIComponent(extraOptions.language ?? this.languageCode);
+        const encodedText = encodeURIComponent(text);
+        const encodedVoice = encodeURIComponent(voice);
+
+        const url = `https://www.lingq.com/api/v2/tts/?text=${encodedText}&voice=${encodedVoice}&app_name=${app_name}&language=${language}`;
+        const init = {
+            method: 'GET',
+            headers: this.buildHeaders({ isPost: false, includeCsrf: false }),
+        };
+        const response = await fetch(url, init)
+        if (!response.ok) throw new Error('Failed to get TTS speech');
+        
+        const ttsResponse: TTSReturnType = await response.json();
+        
+        typia.assert<TTSReturnType>(ttsResponse); // Throws an error if the response is invalid
+        
+        return ttsResponse;
+    }
 }
