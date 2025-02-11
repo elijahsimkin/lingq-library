@@ -222,6 +222,26 @@ export default class LingqAPI {
             method: 'DELETE',
         });
     }
+    /**
+     * 
+     * @param incrementAmount how many more times the user has read it
+     * @param automatic whether it is automatic or manual. Manual may not earn the user points they otherwise achieved / have unintended side-effects.
+     * @param app Optional parameter if you want to convey the source to be different than the web.
+     */
+    async lessonStatsReadTimeIncrement(incrementAmount: number, automatic = true, app = 'web') {
+        const url = `https://www.lingq.com//api/v2/he/lesson-stats/36592895/`;
+        const init = {
+            method: 'PATCH',
+            headers: this.buildHeaders({ isPost: true, includeCsrf: true }),
+            body: JSON.stringify({
+                automatic,
+                readTimes: incrementAmount,
+                app,
+                action: 'increment'
+            }),
+        }
+
+    }
     async lessonWordsGet(): Promise<LessonWordsGetReturnValue> {
         const response = await fetch(
             `https://www.lingq.com/api/v3/${this.languageCode}/lessons/${this.lessonCode}/words/`,
