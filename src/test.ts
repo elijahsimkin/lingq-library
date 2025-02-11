@@ -50,21 +50,22 @@ createTestGroup('Lesson Operations', true, () => {
                 console.log('Lesson:', lesson.id);
             });
 
+            createTest('Lesson Words Get', async () => {
+                const words = await lingQ.lessonWordsGet();
+                if (
+                    !words ||
+                    typeof words !== 'object' ||
+                    !words.cards ||
+                    !words.words ||
+                    typeof words.cards !== 'object' ||
+                    typeof words.words !== 'object'
+                ) {
+                    throw new Error('Invalid structure for lesson words');
+                }
+                console.log('Lesson Words Get:', inspect(words, { depth: null, colors: true }));
+            });
+            
             createTestGroup('Sentence Operations', false, () => {
-                createTest('Lesson Words Get', async () => {
-                    const words = await lingQ.lessonWordsGet();
-                    if (
-                        !words ||
-                        typeof words !== 'object' ||
-                        !words.cards ||
-                        !words.words ||
-                        typeof words.cards !== 'object' ||
-                        typeof words.words !== 'object'
-                    ) {
-                        throw new Error('Invalid structure for lesson words');
-                    }
-                    console.log('Lesson Words Get:', inspect(words, { depth: null, colors: true }));
-                });
 
                 createTest('Sentence Create', async () => {
                     const response = await lingQ.sentenceCreate(1, 'New test sentence', false);
