@@ -20,6 +20,11 @@ type ParamsLessonCreate = {
     notes: string;
     save: boolean;
 };
+type LessonStats = {
+    listenTimes: number,
+    readTimes: number,
+    cardsCreated: number
+}
 type LessonCreateReturnType = {
     id: number,
     contentId: number,
@@ -228,8 +233,8 @@ export default class LingqAPI {
      * @param automatic whether it is automatic or manual. Manual may not earn the user points they otherwise achieved / have unintended side-effects.
      * @param app Optional parameter if you want to convey the source to be different than the web.
      */
-    async lessonStatsReadTimeIncrement(incrementAmount: number, automatic = true, app = 'web') {
-        const url = `https://www.lingq.com//api/v2/he/lesson-stats/36592895/`;
+    async lessonStatsReadTimeIncrement(incrementAmount: number, automatic = true, app = 'web'): Promise<LessonStats> {
+        const url = `https://www.lingq.com//api/v2/${this.languageCode}/lesson-stats/${this.lessonCode}/`;
         const init = {
             method: 'PATCH',
             headers: this.buildHeaders({ isPost: true, includeCsrf: true }),
@@ -240,8 +245,18 @@ export default class LingqAPI {
                 action: 'increment'
             }),
         }
-
+        const response = await fetch(url, init);;
+        if (!response.ok) throw new Error('Failed to increment read time');
+        const lessonStats: LessonStats = await response.json();
+        typia.assert<LessonStats>(lessonStats); // Throws an error if the response is invalid
+        return lessonStats;
     }
+
+    async lessonBookmarkCreate() {
+        const url = `https://www.lingq.com/api/v3/${this.languageCode}/lessons/${this.lessonCode}/bookmark/`;
+        
+    }
+
     async lessonWordsGet(): Promise<LessonWordsGetReturnValue> {
         const response = await fetch(
             `https://www.lingq.com/api/v3/${this.languageCode}/lessons/${this.lessonCode}/words/`,
