@@ -251,7 +251,7 @@ export default class LingqAPI {
      * @param app Optional parameter if you want to convey the source to be different than the web.
      */
     async lessonStatsReadTimeIncrement(incrementAmount: number, automatic = true, app = 'web'): Promise<LessonStats> {
-        const url = `https://www.lingq.com//api/v2/${this.languageCode}/lesson-stats/${this.lessonCode}/`;
+        const url = this.getLessonStatsURL();
         const init = {
             method: 'PATCH',
             headers: this.buildHeaders({ isPost: true, includeCsrf: true }),
@@ -268,6 +268,35 @@ export default class LingqAPI {
         typia.assert<LessonStats>(lessonStats); // Throws an error if the response is invalid
         return lessonStats;
     }
+        /**
+     * 
+     * @param incrementAmount how many more times the user has read it
+     * @param automatic whether it is automatic or manual. Manual may not earn the user points they otherwise achieved / have unintended side-effects.
+     * @param app Optional parameter if you want to convey the source to be different than the web.
+     */
+    async lessonStatsListenTimeIncrement(incrementAmount: number, automatic = true, app = 'web'): Promise<LessonStats> {
+        const url = this.getLessonStatsURL();
+        const init = {
+            method: 'PATCH',
+            headers: this.buildHeaders({ isPost: true, includeCsrf: true }),
+            body: JSON.stringify({
+                automatic,
+                listenTimes: incrementAmount,
+                app,
+                action: 'increment'
+            }),
+        }
+        const response = await fetch(url, init);;
+        if (!response.ok) throw new Error('Failed to increment read time');
+        const lessonStats: LessonStats = await response.json();
+        typia.assert<LessonStats>(lessonStats); // Throws an error if the response is invalid
+        return lessonStats;
+    }
+    
+    private getLessonStatsURL() {
+        return `https://www.lingq.com//api/v2/${this.languageCode}/lesson-stats/${this.lessonCode}/`;
+    }
+
     /**
      * 
      * Sets where the user will reopen the page based on the index of a word. Throws an error if it doesn't work. Otherwise returns true.
