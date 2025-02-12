@@ -8,7 +8,7 @@
 		"type": "node",
 		"request": "launch",
 		"name": "Debug Test",
-		"program": "${workspaceFolder}/out/src/test.ts",
+		"program": "${workspaceFolder}/out/test/test.js",
 		"preLaunchTask": "tsc: build - tsconfig.json",
 		"outFiles": ["${workspaceFolder}/out/**/*.js"]
 	  }
