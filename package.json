@@ -9,9 +9,9 @@
     "dist"
   ],
   "scripts": {
-    "dev": "npm run build && node dist/index.js",
-    "test": "npm run build && node dist/test.js",
     "build": "tsc",
+    "clean": "rm -rf out",
+    "test": "npm run build && node out/test/test.js",
     "prepare": "ts-patch install && typia patch"
   },
   "exports": {

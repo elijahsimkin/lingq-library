@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "src",
+    "outDir": "out",
+    "rootDir": ".",
     "module": "ESNext",
     "moduleResolution": "Node",
     "target": "ES6",
@@ -17,5 +17,6 @@
       }
     ]
   },
-  "include": ["src"]
+  "include": ["src", "test"],
+  "exclude": ["node_modules", "out"]
 }

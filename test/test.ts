@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
-import { Lesson } from './LingQ';
-import LingqAPI from './index.js';
+import { Lesson } from '../src/LingQ';
+import LingqAPI from '../src/index.js';
 import { inspect } from 'util';
 import { COLORS, createTest, createTestGroup, runTests } from './testinglib.js';
 
@@ -76,14 +76,13 @@ createTestGroup('Lesson Operations', true, () => {
                     }
                     console.log('Sentence Create Response:', response.status);
                 }, true);
-
                 createTestGroup('Sentence Modification Tests', false, () => {
                     createTest('Sentence Text Update', async () => {
                         const response = await lingQ.sentenceTextUpdate(1, 'Updated test sentence');
                         if (!response.ok) {
                             throw new Error('Sentence text update failed');
                         }
-                        console.log('Sentence Text Update Response:', response.status);
+                        
                     });
     
                     createTest('Sentence Timestamp Update', async () => {
@@ -91,7 +90,6 @@ createTestGroup('Lesson Operations', true, () => {
                         if (!response.ok) {
                             throw new Error('Sentence timestamp update failed');
                         }
-                        console.log('Sentence Timestamp Update Response:', response.status);
                     });
     
                     createTest('Sentence Break', async () => {
@@ -108,16 +106,12 @@ createTestGroup('Lesson Operations', true, () => {
                     if (!response.ok) {
                         throw new Error('Sentence delete failed');
                     }
-                    console.log('Sentence Delete Response:', response.status);
                 }, true);
+
             });
 
             createTest('Lesson Delete', async () => {
                 const response = await lingQ.lessonDelete(lessonId);
-                console.log(
-                    'Lesson Delete Response:',
-                    inspect(response, { depth: null, colors: true })
-                );
                 if (!response.ok) {
                     throw new Error('Failed to delete lesson');
                 }
