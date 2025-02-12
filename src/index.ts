@@ -1,5 +1,5 @@
 import typia from 'typia';
-import { Lesson } from './LingQ';
+import { Lesson, Sentence } from './LingQ';
 import { inspect } from 'util';
 
 // index.ts
@@ -360,13 +360,20 @@ export default class LingqAPI {
     // ========================
     // SENTENCES
     // ========================
-    async sentenceTimestampUpdate(index: number, timestamp: [number, number]) {
-        return await this._postSentences({
+    async sentenceTimestampUpdate(index: number, timestamp: [number, number]): Promise<Sentence> {
+        const response = await this._postSentences({
             action: 'update',
             timestamp,
             index,
             lone: false,
         });
+
+        if (!response.ok)
+            throw new Error('Failed to update sentence timestamp');
+        
+        const newSentence: Sentence = await response.json();
+        typia.assert<Sentence>(newSentence); // Throws an error if the response is invalid
+        return newSentence;
     }
     /**
      *
@@ -390,15 +397,24 @@ export default class LingqAPI {
      * @param after if you want the new sentence to be after the current one. The default is false.
      * @returns
      */
-    async sentenceCreate(index: number, text: string, after = false) {
+    async sentenceCreate(index: number, text: string, after = false): Promise<Sentence> {
         // after=false means that the new sentence will be @ index
-        return await this._postSentences({
+        const response = await this._postSentences({
             after: after,
             text: text,
             lone: false,
             index: index,
             action: 'create',
         });
+
+        if (!response.ok)
+            throw new Error('Failed to create sentence');
+
+        const newSentence = await response.json();
+
+        typia.assert<Sentence>(newSentence); // Throws an error if the response is invalid
+
+        return newSentence;
     }
 
     async sentenceDelete(index: number) {
