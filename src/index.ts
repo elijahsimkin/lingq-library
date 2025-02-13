@@ -154,13 +154,20 @@ export type LessonWordHint = {
 };
 export type LessonWord = {
     hints: LessonWordHint[];
-    importance: number;
-    status: string; // "known is one status"
+    importance: number; // 0 is 
+    status: 'known' | 'card' | 'ignored' | 'new';
     tags: unknown[];
     text: string;
 };
+enum LessonCardStatus {
+    IGNORE = -1,
+    LEVEL_1,
+    LEVEL_2,
+    LEVEL_3,
+    LEVEL_4 // known
+}
 export type LessonCard = {
-    extended_status: number;
+    extended_status: number | null; // = LessonCardStatus & extendstatus = 3 when card is known
     fragment: string;
     gTags: unknown[];
     hints: LessonCardHint[]; // used typically for translations
@@ -168,7 +175,7 @@ export type LessonCard = {
     notes: string;
     pk: number;
     srs_due_date: string; // unknown if this follows a format. example is 2038-09-15T19:01:31.255199 as of 2/9/2025
-    status: number;
+    status: LessonCardStatus;
     term: string;
     transliteration: unknown; // some kind of object
     words: string[]; // if it is a phrase
@@ -176,7 +183,7 @@ export type LessonCard = {
 };
 export type LessonWordsGetReturnValue = {
     cards: {
-        [key: number]: LessonCard; // significance of key value unknown. non-sequential.
+        [cardId: number]: LessonCard; // key value is card id. card ids can be found in lesson word
     };
     words: {
         [key: number]: LessonWord;
@@ -205,7 +212,7 @@ export default class LingqAPI {
     private csrfToken: string;
     private sessionId: string;
 
-    private static VERSION = 'Web/5.3.46'; // update this or you will be rejected
+    private static VERSION = 'Web/5.3.49'; // update this or you will be rejected
     private commonHeaders: {
         'Accept': string;
         'Priority': string;
@@ -496,9 +503,9 @@ export default class LingqAPI {
             action: 'create',
         });
 
-        if (!response.ok) throw new Error('Failed to create sentence');
-
         const newSentence = await response.json();
+        
+        if (!response.ok) throw new Error('Failed to create sentence');
 
         typia.assert<Sentence>(newSentence); // Throws an error if the response is invalid
 
