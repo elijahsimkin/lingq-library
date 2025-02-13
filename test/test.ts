@@ -1,6 +1,5 @@
 import * as dotenv from 'dotenv';
-import { Lesson } from '../src/LingQ';
-import LingqAPI from '../src/index.js';
+import LingqAPI, { Lesson } from '../src/index.js';
 import { inspect } from 'util';
 import { COLORS, createTest, createTestGroup, runTests } from './testinglib.js';
 
@@ -70,15 +69,16 @@ createTestGroup('Lesson Operations', true, () => {
                 createTest('Sentence Create', async () => {
                     const newSentence = await lingQ.sentenceCreate(1, 'New test sentence', false);
                     
-                    console.log('Sentence Create Response:', newSentence);
-                    
                 }, true);
                 createTestGroup('Sentence Modification Tests', false, () => {
                     createTest('Sentence Text Update', async () => {
                         const response = await lingQ.sentenceTextUpdate(1, 'Updated test sentence');
+                        
                         if (!response.ok) {
                             throw new Error('Sentence text update failed');
                         }
+                        console.log('Sentence Text Update Response:', await response.json());
+                        
                     });
     
                     createTest('Sentence Timestamp Update', async () => {
