@@ -2,11 +2,10 @@
   "name": "lingq-library",
   "version": "1.0.0",
   "description": "A TypeScript Node.js library for interacting with LingQ",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "main": "out/src/index.js",
+  "types": "out/src/index.d.ts",
   "files": [
-    "dist"
+    "out/src"
   ],
   "scripts": {
     "build": "tsc",
@@ -15,8 +14,9 @@
     "prepare": "ts-patch install && typia patch"
   },
   "exports": {
-    "import": "./dist/index.mjs",
-    "require": "./dist/index.cjs"
+    "import": "./out/src/index.mjs",
+    "require": "./out/src/index.cjs",
+    "types": "./out/src/index.d.ts"
   },
   "type": "module",
   "keywords": [],
